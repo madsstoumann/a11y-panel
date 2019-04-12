@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+<head>
+  <title>A11y Panel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link href="../assets/css/a11y.css" rel="stylesheet">
+  <style>
+    html, body, main { min-height: 100vh; }
+    body { margin: 0; padding: 0; }
+    main { background-color: tomato; }
+    img { max-width: 100%; }
+    figure { position: relative; }
+    figcaption { font-size: 2rem; position: absolute; bottom: 1em; left: 1em; color: #fff; }
+  </style>
+</head>
+<body>
+<main>
+  <nav
+    class="a11y-panel__wrapper"
+    data-js="a11yPanel"
+    data-label-brightness="Lysstyrke"
+    data-label-contrast="Kontrast">
+    <button
+      aria-label="Toggle Accessibility Settings, use shift + ?"
+      class="a11y-panel__toggle"
+      role="button">
+    </button>
+  </nav>
+
+  <figure>
+    <img src="../assets/images/02.jpeg" alt="Demo image" />
+    <figcaption>White unreadable text on image</figcaption>
+  </figure>
+  <h1>Hello world</h1>
+  <a href="#">This is a link</a>
+
+  <script type="module">
+    const elements = document.querySelectorAll('[data-js*="a11yPanel"]');
+    if (elements.length) {
+      import('../assets/js/a11yPanel.mjs')
+      .then(module => {
+        const jsClass = module.default;
+        elements.forEach(element => {
+          new jsClass(element,element.dataset
+          );
+        });
+      })
+    }
+  </script>
+  </main>
+</body>
+</html>
