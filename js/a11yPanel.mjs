@@ -1,63 +1,68 @@
 /**
  * A11y Panel.
  * @module a11yPanel.mjs
- * @version 0.1.0
+ * @version 0.1.1
  * @author Mads Stoumann
  * @description Accessibility Settings-panel: Adjust brightness, contrast, color-modes and more.
+ * TODO: TEST IN ALL BROWSERS
+ * TODO: Mobile panbel with scroll
  */
 
 export default class A11yPanel {
   constructor(wrapper, settings) {
-    this.settings = {
-      ...{
+    this.settings = Object.assign(
+      {
         clsBody: 'a11y',
+        clsBodyAll: 'a11y--all',
         clsClose: 'a11y-panel__close',
         clsDialog: 'a11y-panel',
         clsForm: 'a11y-panel__form',
 
-        labelApply: 'TODO',
+        labelApply: 'Apply to images, or',
         labelBrightness: 'Brightness',
         labelClose: '&#10005;',
         labelColorMode: 'Color mode',
         labelContrast: 'Contrast',
         labelDefault: 'Default',
         labelGrayscale: 'Grayscale',
-        labelImagesOnly: 'Images only',
+        labelAllContent: 'All content',
         labelInverted: 'Inverted',
         labelReset: 'Reset',
         labelSave: 'Save',
+        labelZoomBrowser:
+          'Use <kbd>Ctrl+</kbd> to zoom in and <kbd>Ctrl-</kbd> to zoom out.',
+        labelZoomLevel: 'Current Zoom-level',
 
-        maxBrightness: 100,
-        minBrightness: 20,
+        maxBrightness: 200,
+        minBrightness: 0,
         optionsBrightness: 5,
         valueBrightness: 100,
 
         maxContrast: 200,
-        minContrast: 20,
+        minContrast: 0,
         optionsContrast: 5,
         valueContrast: 100
       },
-      ...settings
-    };
+      settings
+    );
 
+    this.currentZoomLevel = 100;
     this.dialogSupported = typeof HTMLDialogElement === 'function';
     this.wrapper = wrapper;
     this.toggle = wrapper.firstElementChild;
+    this.initState();
     this.init();
-
-    //eslint-disable-next-line
-    console.log(this);
   }
 
   /**
-  * @function createOptions
-  * @description Adds optiosn to a <datalist>
-  * @param {Number} total
-  * @param {Number} min
-  * @param {Number} max
-  */
+   * @function createOptions
+   * @description Adds optiosn to a <datalist>
+   * @param {Number} total
+   * @param {Number} min
+   * @param {Number} max
+   */
   createOptions(total, min, max) {
-    return new Array(total)
+    return new Array(total + 1)
       .fill(undefined)
       .map(
         (option, index) => `<option>${((max - min) / total) * index}</option>`
@@ -66,12 +71,20 @@ export default class A11yPanel {
   }
 
   /**
-  * @function init
-  * @description Create DOM-nodes, add event-listeners
-  */
-  init() {
-    this.load();
+   * @function getZoomLevel
+   * @description Returns current zoomLevel
+   */
+  getZoomLevel() {
+    if (this.zoomLevel) {
+      this.zoomLevel.innerText = Math.round(window.devicePixelRatio * 100);
+    }
+  }
 
+  /**
+   * @function init
+   * @description Create DOM-nodes, add event-listeners
+   */
+  init() {
     this.close = document.createElement('button');
     this.close.classList.add(this.settings.clsClose);
     this.close.innerHTML = this.settings.labelClose;
@@ -87,6 +100,7 @@ export default class A11yPanel {
       this.save();
     });
 
+    this.zoomLevel = this.form.querySelector('[data-zoom-level]');
     this.dialog = document.createElement('dialog');
     this.dialog.classList.add(this.settings.clsDialog);
     this.dialog.appendChild(this.close);
@@ -113,44 +127,65 @@ export default class A11yPanel {
         default:
       }
     });
+    window.addEventListener('resize', () => this.getZoomLevel());
+    this.load();
   }
 
   /**
-  * @function load
-  * @description Load settings from localStorage
-  */
+   * @function initState
+   * @description Init local state
+   */
+  initState() {
+    this.state = {
+      allContent: false,
+      brightness: this.settings.valueBrightness,
+      colorMode: 0,
+      contrast: this.settings.valueContrast
+    };
+  }
+
+  /**
+   * @function load
+   * @description Load settings from localStorage
+   */
   load() {
-    // eslint-disable-next-line
-    console.info('loading defaults');
+    try {
+      const state = JSON.parse(window.localStorage.getItem('a11ypanel'));
+      if (state) {
+        this.state = state;
+        this.form['a11y-panel-brightness'].value = this.state.brightness;
+        this.form['a11y-panel-contrast'].value = this.state.contrast;
+        this.form['a11y-panel-allContent'].checked = this.state.allContent;
+        this.form.elements.colormode.value = this.state.colorMode;
+        this.setProperties();
+      }
+    } catch (err) {}
   }
 
   /**
-  * @function reset
-  * @description Resets values to defaults
-  */
+   * @function reset
+   * @description Resets values to defaults
+   */
   reset() {
-    this.setProperty('brightness', this.settings.valueBrightness, '%');
-    this.setProperty('contrast', this.settings.valueContrast, '%');
-    this.setProperty('grayscale', 0);
-    this.setProperty('invert', 0);
+    this.initState();
+    this.setProperties();
   }
 
   /**
-  * @function save
-  * @description Save current state to localStorage
-  */
+   * @function save
+   * @description Save current state to localStorage
+   */
   save() {
-    // eslint-disable-next-line
-    console.log('save');
+    window.localStorage.setItem('a11ypanel', JSON.stringify(this.state));
   }
 
   /**
-  * @function setProperty
-  * @description Helper-function for setting a custom CSS property
-  * @param {String} property
-  * @param {String | Number} value
-  * @param {String} [suffix]
-  */
+   * @function setProperty
+   * @description Helper-function for setting a custom CSS property
+   * @param {String} property
+   * @param {String | Number} value
+   * @param {String} [suffix]
+   */
   setProperty(property, value, suffix = '') {
     document.documentElement.style.setProperty(
       `--${property}`,
@@ -159,36 +194,52 @@ export default class A11yPanel {
   }
 
   /**
-  * @function stateChange
-  * @description Triggers whenever an element within the a11y-form changes state/value
-  * @param {Event} event
-  */
+   * @function setProperties
+   * @description Updates CSS Custom properties with state
+   */
+  setProperties() {
+    this.setProperty('brightness', this.state.brightness, '%');
+    this.setProperty('contrast', this.state.contrast, '%');
+    this.setProperty('grayscale', this.state.colorMode === 2 ? 1 : 0);
+    this.setProperty('invert', this.state.colorMode === 1 ? 1 : 0);
+    document.body.classList.toggle(
+      this.settings.clsBodyAll,
+      this.state.allContent
+    );
+  }
+
+  /**
+   * @function stateChange
+   * @description Triggers whenever an element within the a11y-form changes state/value
+   * @param {Event} event
+   */
   stateChange(event) {
     const target = event.target;
     const value = target.value - 0;
 
     switch (target.dataset.state) {
+      case 'allContent':
+        this.state.allContent = target.checked;
+        break;
       case 'brightness':
-        this.setProperty('brightness', value, '%');
+        this.state.brightness = value;
         break;
       case 'contrast':
-        this.setProperty('contrast', value, '%');
+        this.state.contrast = value;
         break;
       case 'colorMode':
-        this.setProperty('grayscale', value === 2 ? 1 : 0);
-        this.setProperty('invert', value === 1 ? 1 : 0);
-        break;
-      case 'imagesOnly':
+        this.state.colorMode = value;
         break;
       default:
         break;
     }
+    this.setProperties();
   }
 
   /**
-  * @function template
-  * @description Renders the inner part of the a11y-panel
-  */
+   * @function template
+   * @description Renders the inner part of the a11y-panel
+   */
   template() {
     return `
     <div class="a11y-panel-field">
@@ -245,13 +296,15 @@ export default class A11yPanel {
     <div class="a11y-panel-field--noborder">
     <fieldset class="a11y-panel-field__group">
       <legend class="a11y-panel-field__legend a11y-panel-field__label">
-        <strong class="a11y-panel-field__label-text">TODO</strong>
+        <strong class="a11y-panel-field__label-text">${
+          this.settings.labelApply
+        }</strong>
       </legend>
 
       <label class="a11y-panel-field__checkbox a11y-panel-field__checkbox--switch">
-        <input type="checkbox" name="imagesonly" class="u-visually-hidden" data-state="imagesOnly" />
+        <input type="checkbox" id="a11y-panel-allContent" class="u-visually-hidden" data-state="allContent" />
         <span class="a11y-panel-field__group-item a11y-panel-field__checkbox-text">${
-          this.settings.labelImagesOnly
+          this.settings.labelAllContent
         }</span>
       </label>
     </fieldset>
@@ -285,6 +338,16 @@ export default class A11yPanel {
       </fieldset>
     </div>
 
+    <div class="a11y-panel-field a11y-panel-field--noborder a11y-panel-field__label">
+      <strong class="a11y-panel-field__label-text">${
+        this.settings.labelZoomLevel
+      }:
+      </strong>
+      <span data-zoom-level>${this.currentZoomLevel}</span>%
+    </div>
+
+    <p hidden>${this.settings.labelZoomBrowser}</p>
+
     <nav class="a11y-panel__buttons">
       <button type="reset" class="a11y-panel__reset">${
         this.settings.labelReset
@@ -297,10 +360,10 @@ export default class A11yPanel {
   }
 
   /**
-  * @function toggleDialog
-  * @description Open/Close the a11y-panel
-  * @param {Boolean} open
-  */
+   * @function toggleDialog
+   * @description Open/Close the a11y-panel
+   * @param {Boolean} open
+   */
   toggleDialog(open) {
     if (open) {
       this.active = document.activeElement;

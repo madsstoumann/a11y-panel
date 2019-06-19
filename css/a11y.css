@@ -18,6 +18,11 @@ body.a11y figcaption {
   filter: invert(var(--invert));
 }
 
+body.a11y.a11y--all {
+  filter: grayscale(var(--grayscale)) contrast(var(--contrast))
+    brightness(var(--brightness)) invert(var(--invert));
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;
@@ -109,7 +114,8 @@ body.a11y figcaption {
   border: 0;
   border-radius: 0;
   box-shadow: 0 15px 25px hsla(0, 0%, 0%, 0.15), 0 5px 10px hsla(0, 0%, 0%, 0.5);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
   left: auto;
   padding: var(--u-300);
   position: fixed;
@@ -123,6 +129,12 @@ body.a11y figcaption {
 }
 .a11y-panel::backdrop {
   background: transparent;
+}
+.a11y-panel kbd {
+  background: var(--c-nt-300);
+  font-family: monospace;
+  margin: 0 0.15rem;
+  padding: 0.15rem;
 }
 .a11y-panel__buttons {
   display: flex;
@@ -141,7 +153,9 @@ body.a11y figcaption {
   margin-bottom: var(--fls-g-multiplier);
   position: relative;
 }
-.a11y-panel-field__checkbox input:checked + .a11y-panel-field__checkbox-text::before {
+.a11y-panel-field__checkbox
+  input:checked
+  + .a11y-panel-field__checkbox-text::before {
   background-color: var(--c-pm-500);
   box-shadow: none;
 }
@@ -174,16 +188,22 @@ body.a11y figcaption {
 .a11y-panel-field__radio input:focus + .a11y-panel-field__radio-text {
   color: var(--c-pm-900);
 }
-.a11y-panel-field__checkbox input:focus + .a11y-panel-field__checkbox-text::before {
+.a11y-panel-field__checkbox
+  input:focus
+  + .a11y-panel-field__checkbox-text::before {
   box-shadow: var(--fld-chk-focus);
 }
-.a11y-panel-field__checkbox input:checked:focus + .a11y-panel-field__checkbox-text::before {
+.a11y-panel-field__checkbox
+  input:checked:focus
+  + .a11y-panel-field__checkbox-text::before {
   box-shadow: var(--fld-chk-focus-sel);
 }
 .a11y-panel-field__radio input:focus + .a11y-panel-field__radio-text::before {
   box-shadow: var(--bxsh-400), var(--fld-chk-focus);
 }
-.a11y-panel-field__radio input:checked:focus + .a11y-panel-field__radio-text::before {
+.a11y-panel-field__radio
+  input:checked:focus
+  + .a11y-panel-field__radio-text::before {
   box-shadow: var(--bxsh-400), var(--fld-chk-focus-sel);
 }
 .a11y-panel-field__checkbox--switch {
@@ -214,16 +234,25 @@ body.a11y figcaption {
   transition: left var(--a-tm-100) ease-in-out;
   width: calc(var(--switch-h) - (var(--switch-bdw) * 2));
 }
-[dir="rtl"] .a11y-panel-field__checkbox--switch .a11y-panel-field__checkbox-text::after {
+[dir='rtl']
+  .a11y-panel-field__checkbox--switch
+  .a11y-panel-field__checkbox-text::after {
   right: var(--switch-bdw);
 }
-.a11y-panel-field__checkbox--switch input:checked + .a11y-panel-field__checkbox-text::after {
+.a11y-panel-field__checkbox--switch
+  input:checked
+  + .a11y-panel-field__checkbox-text::after {
   left: calc((var(--switch-w) - var(--switch-h)) + var(--switch-bdw));
 }
-[dir="rtl"] .a11y-panel-field__checkbox--switch input:checked + .a11y-panel-field__checkbox-text::after {
+[dir='rtl']
+  .a11y-panel-field__checkbox--switch
+  input:checked
+  + .a11y-panel-field__checkbox-text::after {
   right: calc((var(--switch-w) - var(--switch-h)) + var(--switch-bdw));
 }
-.a11y-panel-field__checkbox--switch input:checked + .a11y-panel-field__checkbox-text::before {
+.a11y-panel-field__checkbox--switch
+  input:checked
+  + .a11y-panel-field__checkbox-text::before {
   background-image: none;
 }
 .a11y-panel-field__group,
@@ -378,13 +407,16 @@ body.a11y figcaption {
 /* TODO */
 .a11y-panel__toggle {
   background-image: var(--i-a11y);
-  border: 0;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  background-size: 75%;
+  border: 1px solid var(--c-nt-600);
   border-radius: 100%;
   height: 4rem;
-  width: 4rem;
   position: fixed;
   right: var(--u-300);
   top: var(--u-300);
+  width: 4rem;
   z-index: calc(var(--a11y-zindex) + 1);
 }
 
