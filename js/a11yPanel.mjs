@@ -51,6 +51,8 @@ export default class A11yPanel {
         minZoom: 100,
         valueZoom: 100,
 
+        expiresAfter: 86400000,
+
         showApplyImages: true,
         showBrightness: true,
         showColorMode: true,
@@ -115,6 +117,7 @@ export default class A11yPanel {
     this.form.addEventListener('submit', event => {
       event.preventDefault();
       this.save();
+      this.toggleDialog(false);
     });
 
     this.dialog = document.createElement('dialog');
@@ -159,6 +162,7 @@ export default class A11yPanel {
       contrast: this.settings.valueContrast,
       focusable: 0,
       fontsize: this.settings.valueFontsize,
+      timestamp: new Date().getTime(),
       zoom: this.settings.valueZoom
     };
   }
@@ -171,17 +175,52 @@ export default class A11yPanel {
     try {
       const state = JSON.parse(window.localStorage.getItem('a11ypanel'));
       if (state) {
+        /* Check timestamp, make sure to clear panel after a day */
+        const timestamp = state.hasOwnProperty('timestamp')
+          ? state.timestamp
+          : 0;
+
+        if (this.state.timestamp - this.settings.expiresAfter > timestamp) {
+          throw new Error('Timestamp too old: Cleaning up');
+        }
+
         this.state = state;
-        this.form['a11y-panel-allContent'].checked = this.state.allContent;
-        this.form['a11y-panel-brightness'].value = this.state.brightness;
-        this.form['a11y-panel-contrast'].value = this.state.contrast;
-        this.form['a11y-panel-focusable'].checked = this.state.focusable === 1;
-        this.form['a11y-panel-fontsize'].value = this.state.fontsize;
-        this.form['a11y-panel-zoom'].value = this.state.zoom;
+
+        const content = this.form['a11y-panel-allContent'];
+        if (content) {
+          content.checked = this.state.allContent;
+        }
+        const brightness = this.form['a11y-panel-brightness'];
+        if (brightness) {
+          brightness.value = this.state.brightness;
+        }
+
+        const contrast = this.form['a11y-panel-contrast'];
+        if (contrast) {
+          contrast.value = this.state.contrast;
+        }
+
+        const focusable = this.form['a11y-panel-focusable'];
+        if (focusable) {
+          focusable.checked = this.state.focusable === 1;
+        }
+
+        const fontsize = this.form['a11y-panel-fontsize'];
+        if (fontsize) {
+          fontsize.value = this.state.fontsize;
+        }
+
+        const zoom = this.form['a11y-panel-zoom'];
+        if (zoom) {
+          zoom.value = this.state.zoom;
+        }
+
         this.form.elements.colormode.value = this.state.colorMode;
         this.setProperties();
       }
-    } catch (err) {}
+    } catch (err) {
+      window.localStorage.removeItem('a11ypanel');
+    }
   }
 
   /**
@@ -222,11 +261,11 @@ export default class A11yPanel {
   setProperties() {
     this.setProperty('brightness', this.state.brightness, '%');
     this.setProperty('contrast', this.state.contrast, '%');
-    this.setProperty('fontsize', this.state.fontsize, '%');
     this.setProperty('focusable', this.state.focusable);
-    this.setProperty('zoom', this.state.zoom, '%');
+    this.setProperty('fontsize', this.state.fontsize, '%');
     this.setProperty('grayscale', this.state.colorMode === 2 ? 1 : 0);
     this.setProperty('invert', this.state.colorMode === 1 ? 1 : 0);
+    this.setProperty('zoom', this.state.zoom, '%');
     document.body.classList.toggle(
       this.settings.clsBodyAll,
       this.state.allContent

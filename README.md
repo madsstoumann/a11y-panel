@@ -177,3 +177,10 @@ new A11yPanel(panel, panel.dataset);
 | showFocusable    | false      |
 | showFontsize     | false      |
 | showZoom         | false      |
+
+### Expires after
+Deletes local settings after this amount of milliseconds (default: one day)
+
+| Setting          | Default         |
+| :--------------- | :-------------- |
+| expiresAfter     | 86400000        |
