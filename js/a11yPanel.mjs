@@ -68,7 +68,6 @@ export default class A11yPanel {
     this.isEdge = /Edge/.test(navigator.userAgent);
     this.initState();
     this.init();
-    console.log(this);
   }
 
   /**

@@ -1,10 +1,19 @@
 # a11y-panel
 Accessibility-panel with contrast/brightness, font-size/zoom, color-modes and highlight of links / focusable elements.
 
+*Default configuration:*
+
 ![A11y Panel](/docs/a11y.png)
 
+*All features enabled (not recommended, read on):*
+
+![A11y Panel](/docs/a11y__all.png)
+
+## Keyboard shortcuts
+Open the panel with `shift + ?`, close it with `Esc`.
+
 ## Features
-All the panel's features are configurable and can be shown/hidden via the options-object or data-attributes.
+All the panel's features are configurable and can be shown/hidden via the options-object or `data`-attributes.
 
 ### Contrast
 Updates a global CSS-variable, `--contrast`, and applies that to a CSS-filter, targetting all images and background-images.
@@ -25,17 +34,17 @@ Disabled by default.
 
 ### Zoom
 Updates a global CSS-variable, `--zoom`, and applies that to `<body>`.  
-This method scales everything via CSS, and isonly recommended if font-size-scaling can't be used (see above).  
+This method scales everything via CSS, and is only recommended if font-size-scaling can't be used (see above).  
+Not reccomended.  
 Disabled by default.
 
 ## Focusable (highlight tab-stops)
-Adds the class defined in `clsFocusable` (default `a11y--focus`) to all focusable elements, and a counter to a `::before`-pseudo-element, numbering all focusable elements in order.
+Adds the class defined in `clsFocusable` (default `a11y--focus`) to all focusable elements, and a counter to a `::before`-pseudo-element, numbering all focusable elements in order.  
+Disabled by default.
 
+*Below: Example of configuration with focusable elements / tab-stops (yellow squares with numbers):*
 
-
-*Below: All settings enabled*
-
-![A11y Panel](/docs/a11y__all.png)
+![A11y Panel](/docs/a11y__focusable.png)
 
 ## Install
 Copy `a11yPanel.mjs` and `a11y.css` to a location of your choice within your project, and integrate them in your webpack/parcel-setup.
@@ -96,12 +105,14 @@ new A11yPanel(panel, panel.dataset);
 
 ### CSS Classes
 
-- clsBody. Added to `<body>`. 
-- clsBodyAll. Added to `<body>` if "Apply to all content".
-- clsClose. Close-button.
-- clsDialog. Main class for panel.
-- clsFocusable. Added to focusable elements.
-- clsForm. Added to inner form of panel.
+| Setting              | Default              |
+| :------------------- | :------------------- |
+| clsBody              | 'a11y'               |
+| clsBodyAll           | 'a11y--all'          |
+| clsClose             | 'a11y-panel__close'  |
+| clsDialog            | 'a11y-panel'         |
+| clsFocusable         | 'a11y--focus'        |
+| clsForm              | 'a11y-panel__form'   |
 
 ### Labels
 
