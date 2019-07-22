@@ -63,3 +63,5 @@ typings/
 # Files
 *.jpeg
 *.mp4
+
+_tmp/
