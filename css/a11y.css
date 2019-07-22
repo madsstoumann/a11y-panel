@@ -26,6 +26,10 @@ body.a11y figcaption {
   filter: invert(var(--invert));
 }
 
+/* body.a11y main {
+  transform: scale(var(--zoom));
+} */
+
 body.a11y.a11y--all {
   filter: grayscale(var(--grayscale)) contrast(var(--contrast))
     brightness(var(--brightness)) invert(var(--invert));
