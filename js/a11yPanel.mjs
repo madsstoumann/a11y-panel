@@ -3,8 +3,8 @@
 /**
  * A11y Panel.
  * @module a11yPanel.mjs
- * @version 0.1.6
- * @summary 08-10-2019
+ * @version 0.1.7
+ * @summary 18-11-2019
  * @author Mads Stoumann
  * @description Accessibility Settings-panel: Adjust brightness, contrast, color-modes and more.
  */
@@ -20,6 +20,7 @@ export default class A11yPanel {
 				clsFocusable: 'a11y--focus',
 				clsForm: 'a11y-panel__form',
 				clsRoot: 'a11y',
+				clsToggle: 'a11y-panel__toggle',
 
 				labelApply: 'Apply to images, or',
 				labelBrightness: 'Brightness',
@@ -68,7 +69,7 @@ export default class A11yPanel {
 
 		this.dialogSupported = typeof HTMLDialogElement === 'function';
 		this.wrapper = wrapper;
-		this.toggle = wrapper.firstElementChild;
+		this.toggle = document.querySelector(`.${this.settings.clsToggle}`) || wrapper.firstElementChild;
 		this.isEdge = /Edge/.test(navigator.userAgent);
 		this.isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
 		if (this.isIE11) {
