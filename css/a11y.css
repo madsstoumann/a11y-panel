@@ -2,8 +2,8 @@
 	--brightness: 100%;
 	--contrast: 100%;
 	--focusable: 0;
-	--focusable-c: #222;
-	--focusable-bgc: #ffbf47;
+	--focusable-c: #222222;
+	--focusable-bgc: #FFBF47;
 	--fontsize: 100%;
 	--grayscale: 0;
 	--invert: 0;
@@ -26,7 +26,7 @@
 	filter: invert(var(--invert));
 }
 
-:root.a11y.a11y--all {
+:root.a11y body.a11y--all {
 	filter: grayscale(var(--grayscale)) contrast(var(--contrast))
 		brightness(var(--brightness)) invert(var(--invert));
 }
@@ -118,8 +118,7 @@
 	border: 0;
 	border-radius: 0;
 	box-shadow: 0 15px 25px hsla(0, 0%, 0%, 0.15), 0 5px 10px hsla(0, 0%, 0%, 0.5);
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-		Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 	left: auto;
 	max-height: calc(100vh - (var(--u-300) * 2));
 	max-width: 320px;

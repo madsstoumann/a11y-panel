@@ -3,8 +3,8 @@
 /**
  * A11y Panel.
  * @module a11yPanel.mjs
- * @version 0.1.7
- * @summary 18-11-2019
+ * @version 0.3.0
+ * @summary 10-03-2020
  * @author Mads Stoumann
  * @description Accessibility Settings-panel: Adjust brightness, contrast, color-modes and more.
  */
@@ -67,18 +67,23 @@ export default class A11yPanel {
 			this.datasetToObject(settings)
 		);
 
-		this.dialogSupported = typeof HTMLDialogElement === 'function';
-		this.wrapper = wrapper;
-		this.toggle = document.querySelector(`.${this.settings.clsToggle}`) || wrapper.firstElementChild;
-		this.isEdge = /Edge/.test(navigator.userAgent);
-		this.isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-		if (this.isIE11) {
+		this.config = {};
+		this.elements = {};
+		this.config.dialogSupported = typeof HTMLDialogElement === 'function';
+		this.elements.wrapper = wrapper;
+		this.elements.toggle = document.querySelector(`.${this.settings.clsToggle}`) || wrapper.firstElementChild;
+		this.config.isEdge = /Edge/.test(navigator.userAgent);
+		this.config.isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
+
+		/* Delete instance/self if Internet Explorer */
+		if (this.config.isIE11) {
 			wrapper.parentNode.removeChild(wrapper);
 		}
 		else {
 			this.initState();
 			this.init();
 		}
+		console.log(this);
 	}
 
 	/**
@@ -103,7 +108,7 @@ export default class A11yPanel {
 	 * @description Create DOM-nodes, add event-listeners
 	 */
 	init() {
-		/* Add info to all focusable items */
+		/* Add index to all focusable items */
 		this.focusable = document.querySelectorAll(
 			'button, a[href], select, textarea, input:not([type="hidden"])'
 		);
@@ -112,34 +117,34 @@ export default class A11yPanel {
 			item.classList.add(this.settings.clsFocusable);
 		});
 
-		/* Create panel elements */
-		this.close = document.createElement('button');
-		this.close.classList.add(this.settings.clsClose);
-		this.close.innerHTML = this.settings.labelClose;
-		this.close.addEventListener('click', () => this.toggleDialog(false));
+		/* Create panel elements, add eventListeners */
+		this.elements.close = document.createElement('button');
+		this.elements.close.classList.add(this.settings.clsClose);
+		this.elements.close.innerHTML = this.settings.labelClose;
+		this.elements.close.addEventListener('click', () => this.toggleDialog(false));
 
-		this.form = document.createElement('form');
-		this.form.classList.add(this.settings.clsForm);
-		this.form.innerHTML = this.template();
-		this.form.addEventListener('change', event => this.stateChange(event));
-		this.form.addEventListener('reset', () => this.reset());
-		this.form.addEventListener('submit', event => {
+		this.elements.form = document.createElement('form');
+		this.elements.form.classList.add(this.settings.clsForm);
+		this.elements.form.innerHTML = this.template();
+		this.elements.form.addEventListener('change', event => this.stateChange(event));
+		this.elements.form.addEventListener('reset', () => this.reset());
+		this.elements.form.addEventListener('submit', event => {
 			event.preventDefault();
 			this.save();
 			this.toggleDialog(false);
 		});
 
-		this.dialog = document.createElement('dialog');
-		this.dialog.classList.add(this.settings.clsDialog);
-		this.dialog.appendChild(this.close);
-		this.dialog.appendChild(this.form);
-		this.dialog.addEventListener('close', () => this.dialog.close());
+		this.elements.dialog = document.createElement('dialog');
+		this.elements.dialog.classList.add(this.settings.clsDialog);
+		this.elements.dialog.appendChild(this.elements.close);
+		this.elements.dialog.appendChild(this.elements.form);
+		this.elements.dialog.addEventListener('close', () => this.elements.dialog.close());
 
-		this.toggle.addEventListener('click', () => {
+		this.elements.toggle.addEventListener('click', () => {
 			this.toggleDialog(true);
 		});
 
-		this.wrapper.appendChild(this.dialog);
+		this.elements.wrapper.appendChild(this.elements.dialog);
 
 		document.documentElement.classList.add(this.settings.clsRoot);
 		document.body.classList.add(this.settings.clsBody);
@@ -186,9 +191,7 @@ export default class A11yPanel {
 			const state = JSON.parse(window.localStorage.getItem('a11ypanel'));
 			if (state) {
 				/* Check timestamp, make sure to clear panel after a day */
-				const timestamp = state.hasOwnProperty('timestamp')
-					? state.timestamp
-					: 0;
+				const timestamp = state.hasOwnProperty('timestamp') ? state.timestamp : 0;
 
 				if (this.state.timestamp - this.settings.expiresAfter > timestamp) {
 					throw new Error('Timestamp too old: Cleaning up');
@@ -196,36 +199,36 @@ export default class A11yPanel {
 
 				this.state = state;
 
-				const content = this.form['a11y-panel-allContent'];
+				const content = this.elements.form['a11y-panel-allContent'];
 				if (content) {
 					content.checked = this.state.allContent;
 				}
-				const brightness = this.form['a11y-panel-brightness'];
+				const brightness = this.elements.form['a11y-panel-brightness'];
 				if (brightness) {
 					brightness.value = this.state.brightness;
 				}
 
-				const contrast = this.form['a11y-panel-contrast'];
+				const contrast = this.elements.form['a11y-panel-contrast'];
 				if (contrast) {
 					contrast.value = this.state.contrast;
 				}
 
-				const focusable = this.form['a11y-panel-focusable'];
+				const focusable = this.elements.form['a11y-panel-focusable'];
 				if (focusable) {
 					focusable.checked = this.state.focusable === 1;
 				}
 
-				const fontsize = this.form['a11y-panel-fontsize'];
+				const fontsize = this.elements.form['a11y-panel-fontsize'];
 				if (fontsize) {
 					fontsize.value = this.state.fontsize;
 				}
 
-				const zoom = this.form['a11y-panel-zoom'];
+				const zoom = this.elements.form['a11y-panel-zoom'];
 				if (zoom) {
 					zoom.value = this.state.zoom;
 				}
 
-				this.form.elements.colormode.value = this.state.colorMode;
+				this.elements.form.elements.colormode.value = this.state.colorMode;
 				this.setProperties();
 			}
 		} catch (err) {
@@ -259,8 +262,7 @@ export default class A11yPanel {
 	 */
 	setProperty(property, value, suffix = '') {
 		document.documentElement.style.setProperty(
-			`--${property}`,
-			`${value}${suffix}`
+			`--${property}`, `${value}${suffix}`
 		);
 	}
 
@@ -325,156 +327,158 @@ export default class A11yPanel {
 	 */
 	template() {
 		return `
-		${
-			this.settings.showContrast
-				? `
-		<div class="a11y-panel-field">
-			<label class="a11y-panel-field__label o-icon__label o-icon--contrast" for="a11y-panel-contrast">
-				<strong class="a11y-panel-field__label-text">${
-					this.settings.labelContrast
-				}</strong>
-			</label>
-			<input
-				autofocus
-				class="a11y-panel-field__range${this.isEdge ? '--edge' : ''}"
-				data-state="contrast"
-				id="a11y-panel-contrast"
-				min="${this.settings.minContrast}"
-				max="${this.settings.maxContrast}"
-				type="range"
-				value="${this.settings.valueContrast}"
-				/>
-		</div>`
-				: ''
+		${this.settings.showContrast ?
+			this.tmplInputRange(
+			{
+				id: 'a11y-panel-contrast',
+				label: this.settings.labelContrast,
+				state: 'contrast',
+				value: this.settings.valueContrast,
+				icon: 'o-icon--contrast',
+				min: this.settings.minContrast,
+				max: this.settings.maxContrast
+			}) : ''
 		}
-		${
-			this.settings.showBrightness
-				? `
-		<div class="a11y-panel-field">
-			<label class="a11y-panel-field__label o-icon__label o-icon--brightness" for="a11y-panel-brightness">
-				<strong class="a11y-panel-field__label-text">${
-					this.settings.labelBrightness
-				}</strong>
-			</label>
-			<input
-				class="a11y-panel-field__range${this.isEdge ? '--edge' : ''}"
-				data-state="brightness"
-				id="a11y-panel-brightness"
-				min="${this.settings.minBrightness}"
-				max="${this.settings.maxBrightness}"
-				type="range"
-				value="${this.settings.valueBrightness}"
-			/>
-		</div>`
-				: ''
+
+		${this.settings.showBrightness ?
+			this.tmplInputRange(
+			{
+				id: 'a11y-panel-brightness',
+				label: this.settings.labelBrightness,
+				state: 'brightness',
+				value: this.settings.valueBrightness,
+				icon: 'o-icon--brightness',
+				min: this.settings.minBrightness,
+				max: this.settings.maxBrightness
+			}): ''
 		}
-		${
-			this.settings.showApplyImages
-				? `
+
+		${this.settings.showApplyImages ?
+			this.tmplInputCheckbox(
+			{
+				id: 'a11y-panel-allContent',
+				label: this.settings.labelApply,
+				state: 'allContent',
+				value: this.settings.labelAllContent
+			}): ''
+		}
+
+		${this.settings.showFontsize ? 
+			this.tmplInputRange(
+			{
+				id: 'a11y-panel-fontsize',
+				label: this.settings.labelFontsize,
+				state: 'fontsize',
+				value: this.settings.valueFontsize,
+				icon: 'o-icon--fontsize',
+				min: this.settings.minFontsize,
+				max: this.settings.maxFontsize
+			}) : ''
+		}
+
+		${this.settings.showZoom ?
+			this.tmplInputRange(
+			{
+				id: 'a11y-panel-zoom',
+				label: this.settings.labelZoom,
+				state: 'zoom',
+				value: this.settings.valueZoom,
+				icon: 'o-icon--zoom',
+				min: this.settings.minZoom,
+				max: this.settings.maxZoom
+			}) : ''
+		}
+
+		${this.settings.showColorMode ?
+			this.tmplInputRadio(
+			{
+				elements: [
+					{ label: this.settings.labelDefault },
+					{ label: this.settings.labelInverted },
+					{ label: this.settings.labelGrayscale }
+				],
+				group: 'colormode',
+				groupHeader: this.settings.labelColorMode,
+				state: 'colorMode'
+			})  : ''
+		}
+
+		${this.settings.showFocusable ?
+			this.tmplInputCheckbox(
+			{
+				id: 'a11y-panel-focusable',
+				label: this.settings.labelFocusableHeader,
+				state: 'focusable',
+				value: this.settings.labelFocusable
+			}) : ''
+		}
+
+		<nav class="a11y-panel__buttons">
+			<button type="reset" class="a11y-panel__reset">${this.settings.labelReset}</button>
+			<button type="submit" class="a11y-panel__save">${this.settings.labelSave}</button>
+		</nav>
+		`;
+	}
+
+	/**
+	 * @function tmplInputCheckbox
+	 * @description Renders an input checkbox/switch
+	*/
+	tmplInputCheckbox(args) {
+		return `
 		<div class="a11y-panel-field--noborder">
 			<fieldset class="a11y-panel-field__group">
 				<legend class="a11y-panel-field__legend a11y-panel-field__label">
-					<strong class="a11y-panel-field__label-text">${this.settings.labelApply}</strong>
+					<strong class="a11y-panel-field__label-text">${args.label}</strong>
 				</legend>
 				<label class="a11y-panel-field__checkbox a11y-panel-field__checkbox--switch">
-					<input type="checkbox" id="a11y-panel-allContent" class="u-visually-hidden" data-state="allContent" />
-					<span class="a11y-panel-field__group-item a11y-panel-field__checkbox-text">${this.settings.labelAllContent}</span>
+					<input type="checkbox" id="${args.id}" class="u-visually-hidden" data-state="${args.state}" />
+					<span class="a11y-panel-field__group-item a11y-panel-field__checkbox-text">${args.value}</span>
 				</label>
 			</fieldset>
 		</div>`
-				: ''
-		}
-		${
-			this.settings.showFontsize
-				? `
-		<div class="a11y-panel-field">
-			<label class="a11y-panel-field__label o-icon__label o-icon--fontsize" for="a11y-panel-fontsize">
-				<strong class="a11y-panel-field__label-text">${
-					this.settings.labelFontsize
-				}</strong>
-			</label>
-			<input
-				class="a11y-panel-field__range${this.isEdge ? '--edge' : ''}"
-				data-state="fontsize"
-				id="a11y-panel-fontsize"
-				min="${this.settings.minFontsize}"
-				max="${this.settings.maxFontsize}"
-				type="range"
-				value="${this.settings.valueFontsize}"
-			/>
-		</div>`
-				: ''
-		}
-		${
-			this.settings.showZoom
-				? `
-		<div class="a11y-panel-field">
-			<label class="a11y-panel-field__label o-icon__label o-icon--zoom" for="a11y-panel-zoom">
-				<strong class="a11y-panel-field__label-text">${
-					this.settings.labelZoom
-				}</strong>
-			</label>
-			<input
-				class="a11y-panel-field__range${this.isEdge ? '--edge' : ''}"
-				data-state="zoom"
-				id="a11y-panel-zoom"
-				min="${this.settings.minZoom}"
-				max="${this.settings.maxZoom}"
-				type="range"
-				value="${this.settings.valueZoom}"
-			/>
-		</div>`
-				: ''
-		}
-		${
-			this.settings.showColorMode
-				? `
+	}
+
+	/**
+	 * @function tmplInputRadio
+	 * @description Renders an input radio-group
+	*/
+	tmplInputRadio(args) {
+		return `
 		<div class="a11y-panel-field  a11y-panel-field--noborder">
 			<fieldset class="a11y-panel-field__group">
 				<legend class="a11y-panel-field__legend a11y-panel-field__label">
-						<strong class="a11y-panel-field__label-text">${this.settings.labelColorMode}</strong>
+						<strong class="a11y-panel-field__label-text">${args.groupHeader}</strong>
 				</legend>
+				${args.elements.map((element, index) => `
 				<label class="a11y-panel-field__radio">
-						<input type="radio" name="colormode" class="u-visually-hidden" value="0" data-state="colorMode" checked />
-						<span class="a11y-panel-field__group-item a11y-panel-field__radio-text">${this.settings.labelDefault}</span>
-				</label>
-				<label class="a11y-panel-field__radio">
-						<input type="radio" name="colormode" class="u-visually-hidden" value="1" data-state="colorMode" />
-						<span class="a11y-panel-field__group-item a11y-panel-field__radio-text">${this.settings.labelInverted}</span>
-				</label>
-				<label class="a11y-panel-field__radio">
-						<input type="radio" name="colormode" class="u-visually-hidden" value="2" data-state="colorMode" />
-						<span class="a11y-panel-field__group-item a11y-panel-field__radio-text">${this.settings.labelGrayscale}</span>
-				</label>
+						<input type="radio" name="${args.group}" class="u-visually-hidden" value="${index}" data-state="${args.state}" checked />
+						<span class="a11y-panel-field__group-item a11y-panel-field__radio-text">${element.label}</span>
+				</label>`).join('')}
 			</fieldset>
 		</div>`
-				: ''
-		}
-		${
-			this.settings.showFocusable
-				? `
-		<div class="a11y-panel-field--noborder">
-			<fieldset class="a11y-panel-field__group">
-				<legend class="a11y-panel-field__legend a11y-panel-field__label">
-					<strong class="a11y-panel-field__label-text">${this.settings.labelFocusableHeader}</strong>
-				</legend>
-				<label class="a11y-panel-field__checkbox a11y-panel-field__checkbox--switch">
-					<input type="checkbox" id="a11y-panel-focusable" class="u-visually-hidden" data-state="focusable" />
-					<span class="a11y-panel-field__group-item a11y-panel-field__checkbox-text">${this.settings.labelFocusable}</span>
-				</label>
-			</fieldset>
+	}
+
+	/**
+	 * @function tmplInputRange
+	 * @description Renders an input range-control
+	*/
+	tmplInputRange(args) {
+		return `
+		<div class="a11y-panel-field">
+			<label class="a11y-panel-field__label ${args.icon || ''}" for="${args.id}">
+				<strong class="a11y-panel-field__label-text">${args.label}</strong>
+			</label>
+			<input
+				class="a11y-panel-field__range${this.config.isEdge ? '--edge' : ''}"
+				data-state="${args.state}"
+				id="${args.id}"
+				min="${args.min}"
+				max="${args.max}"
+				type="range"
+				value="${args.value}"
+			/>
 		</div>`
-				: ''
-		}
-		<nav class="a11y-panel__buttons">
-			<button type="reset" class="a11y-panel__reset">${
-				this.settings.labelReset
-			}</button>
-			<button type="submit" class="a11y-panel__save">${
-				this.settings.labelSave
-			}</button>
-		</nav>
-		`;
 	}
 
 	/**
@@ -484,21 +488,21 @@ export default class A11yPanel {
 	 */
 	toggleDialog(open) {
 		if (open) {
-			this.active = document.activeElement;
-			this.toggle.setAttribute('aria-expanded', true);
-			if (!this.dialogSupported) {
+			this.elements.active = document.activeElement;
+			this.elements.toggle.setAttribute('aria-expanded', true);
+			if (!this.config.dialogSupported) {
 				this.dialog.setAttribute('open', 'open');
 				return;
 			}
-			this.dialog.showModal();
+			this.elements.dialog.showModal();
 		} else {
-			this.toggle.setAttribute('aria-expanded', false);
-			if (!this.dialogSupported) {
-				this.dialog.removeAttribute('open');
+			this.elements.toggle.setAttribute('aria-expanded', false);
+			if (!this.config.dialogSupported) {
+				this.elements.dialog.removeAttribute('open');
 				return;
 			}
-			this.dialog.close();
-			this.active.focus();
+			this.elements.dialog.close();
+			this.elements.active.focus();
 		}
 	}
 }
